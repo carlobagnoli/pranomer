@@ -25,10 +25,12 @@
     * [ ] Add Begin button
     * [ ] Add Ctrl-w
     * [ ] Add Ctrl-b
-- Add Color Tags with unicode characters
+- Create a logo for the program
 - Add Priorities
 - Add task Weights
-- Add the first commit
+- Add scroll for tasks
+- Add scroll for subtasks
+- Add Color Tags with unicode characters
 
 ## IN PROGRESS
 
@@ -73,3 +75,4 @@
     * [x] Add the subtasks into the task structure
     * [x] Add events to DETAIL MODE
     * [x] Render the subtasks
+- Add the first commit

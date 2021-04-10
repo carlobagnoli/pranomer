@@ -1,5 +1,7 @@
 extern crate rustbox;
 
+use rustbox::Color;
+
 pub mod app;
 pub mod render;
 pub mod list;

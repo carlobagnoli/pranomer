@@ -11,7 +11,7 @@ pub enum InputMode {
     LIST_INSERT,
     DETAIL,
     DESCRIPTION_INSERT,
-    SUBTASK_INSERT
+    SUBTASK_INSERT,
 }
 
 fn normal_events(app: &mut App, key: rustbox::keyboard::Key)
@@ -34,11 +34,7 @@ fn normal_events(app: &mut App, key: rustbox::keyboard::Key)
             app.input_mode = InputMode::INSERT;
         },
         Key::Char('h') => {
-            if let Some(id) = app.list_id {
-                if id > 0 {
-                    app.list_id = Some(id - 1);
-                }
-            }
+            app.list_id.filter(|id| *id > 0).map(|id| app.list_id = Some(id - 1));
         },
         Key::Char('j') => {
             if let Some(list) = app.curr_list() {
@@ -59,11 +55,8 @@ fn normal_events(app: &mut App, key: rustbox::keyboard::Key)
             }
         },
         Key::Char('l') => {
-            if let Some(id) = app.list_id {
-                if id < app.lists.len() - 1 {
-                    app.list_id = Some(id + 1);
-                }
-            }
+            app.list_id.filter(|id| *id < app.lists.len() - 1)
+                       .map(|id| app.list_id = Some(id + 1));
         },
         Key::Char('H') => {
             app.move_task_left();
@@ -78,15 +71,13 @@ fn normal_events(app: &mut App, key: rustbox::keyboard::Key)
             app.move_task_right();
         },
         Key::Char('D') => {
-            if let Some(list) = app.curr_list() {
-                list.remove_curr_task();
-            }
+            app.curr_list().map(|list| list.remove_curr_task());
         },
         Key::Char('X') => {
             app.remove_curr_list();
         },
         Key::Enter => {
-            if let Some(_) = app.curr_task() {
+            if app.curr_task().is_some() {
                 app.input_mode = InputMode::DETAIL;
             }
         },
@@ -101,14 +92,10 @@ fn insert_events(app: &mut App, key: rustbox::keyboard::Key)
             app.input_mode = InputMode::NORMAL;
         },
         Key::Backspace => {
-            if let Some(task) = app.curr_task() {
-                task.remove_from_title();
-            }
+            app.curr_task().map(|task| task.remove_from_title());
         },
         Key::Char(c) => {
-            if let Some(task) = app.curr_task() {
-                task.insert_to_title(c);
-            }
+            app.curr_task().map(|task| task.insert_to_title(c));
         },
         _ => {}
     }
@@ -121,14 +108,10 @@ fn list_insert_events(app: &mut App, key: rustbox::keyboard::Key)
             app.input_mode = InputMode::NORMAL;
         },
         Key::Backspace => {
-            if let Some(list) = app.curr_list() {
-                list.remove_from_title();
-            }
+            app.curr_list().map(|list| list.remove_from_title());
         },
         Key::Char(c) => {
-            if let Some(list) = app.curr_list() {
-                list.insert_to_title(c);
-            }
+            app.curr_list().map(|list| list.insert_to_title(c));
         }
         _ => {}
     }
@@ -162,7 +145,7 @@ fn detail_events(app: &mut App, key: rustbox::keyboard::Key)
             }
         },
         Key::Char('e') => {
-            if let Some(_) = app.curr_task().unwrap().curr_subtask() {
+            if app.curr_task().unwrap().curr_subtask().is_some() {
                 app.input_mode = InputMode::SUBTASK_INSERT;
             }
         },
@@ -258,7 +241,9 @@ pub fn main_loop(rustbox: &rustbox::RustBox, app: &mut App) {
         render::tasks(rustbox, app);
         render::info_bar(rustbox, app);
 
-        if let InputMode::DETAIL | InputMode::DESCRIPTION_INSERT | InputMode::SUBTASK_INSERT = app.input_mode {
+        if let InputMode::DETAIL | InputMode::DESCRIPTION_INSERT |
+            InputMode::SUBTASK_INSERT = app.input_mode
+        {
             render::details(rustbox, app);
         }
         rustbox.present();

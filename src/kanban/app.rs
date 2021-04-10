@@ -39,81 +39,58 @@ impl App {
 
     pub fn curr_list(&mut self) -> Option<&mut List>
     {
-        match self.list_id {
-            Some(id) => Some(&mut self.lists[id]),
-            None     => None
-        }
+        self.list_id.map(move |id| &mut self.lists[id])
     }
 
     pub fn curr_task(&mut self) -> Option<&mut Task>
     {
-        match self.curr_list() {
-            Some(list) => {
-                match list.curr_task() {
-                    Some(task) => Some(task),
-                    None       => None
-                }
-            },
-            None => None
-        }
+        self.curr_list().and_then(|list| list.curr_task())
     }
 
     pub fn move_task_up(&mut self)
     {
-        if let Some(list) = self.curr_list() {
-            if let Some(id) = list.task_id {
-                if id > 0 {
-                    list.tasks.swap(id, id - 1);
-                    list.task_id = Some(id - 1);
-                }
-            }
-        }
+        self.curr_list()
+            .and_then(|list| list.task_id.filter(|id| *id > 0).zip(Some(list)))
+            .map(|(id, list)| {
+                list.tasks.swap(id, id - 1);
+                list.task_id = Some(id - 1);
+            });
     }
 
     pub fn move_task_down(&mut self)
     {
-        if let Some(list) = self.curr_list() {
-            if let Some(id) = list.task_id {
-                if id < list.tasks.len() - 1 {
-                    list.tasks.swap(id, id + 1);
-                    list.task_id = Some(id + 1);
-                }
-            }
-        }
+        self.curr_list()
+            .and_then(|list| list.task_id.filter(|id| *id < list.tasks.len() - 1).zip(Some(list)))
+            .map(|(id, list)| {
+                list.tasks.swap(id, id + 1);
+                list.task_id = Some(id + 1);
+            });
     }
 
     pub fn move_task_left(&mut self)
     {
-        if let Some(list_id) = self.list_id {
-            if list_id > 0 {
-                if let Some(task) = self.lists[list_id].remove_curr_task() {
-                    self.lists[list_id - 1].tasks.push(task);
+        self.list_id.filter(|list_id| *list_id > 0)
+            .and_then(|list_id| Some(list_id).zip(self.lists[list_id].remove_curr_task()))
+            .map(|(id, task)| {
+                self.lists[id - 1].tasks.push(task);
 
-                    self.list_id = Some(list_id - 1);
-                    
-                    if let Some(list) = self.curr_list() {
-                        list.task_id = Some(list.tasks.len() - 1);
-                    }
-                }
-            }
-        }
+                self.list_id = Some(id - 1);
+
+                self.curr_list().map(|list| list.task_id = Some(list.tasks.len() - 1));
+            });
     }
 
     pub fn move_task_right(&mut self)
     {
-        if let Some(list_id) = self.list_id {
-            if list_id < self.lists.len() - 1 {
-                if let Some(task) = self.lists[list_id].remove_curr_task() {
-                    self.lists[list_id + 1].tasks.push(task);
+        self.list_id.filter(|list_id| *list_id < self.lists.len() - 1)
+            .and_then(|list_id| Some(list_id).zip(self.lists[list_id].remove_curr_task()))
+            .map(|(id, task)| {
+                self.lists[id + 1].tasks.push(task);
 
-                    self.list_id = Some(list_id + 1);
+                self.list_id = Some(id + 1);
 
-                    if let Some(list) = self.curr_list() {
-                        list.task_id = Some(list.tasks.len() - 1);
-                    }
-                }
-            }
-        }
+                self.curr_list().map(|list| list.task_id = Some(list.tasks.len() - 1));
+            });
     }
 
     /// The .cleanup() method removes all lists and tasks that don't have a title.

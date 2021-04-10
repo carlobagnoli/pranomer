@@ -149,7 +149,7 @@ pub fn details(rustbox: &rustbox::RustBox, app: &mut App)
 
         if y < rustbox.height() - area.y - 2 {
             rustbox.print(
-                area.x + 5,
+                area.x + 4,
                 y,
                 rustbox::RB_NORMAL,
                 rustbox::Color::Default,

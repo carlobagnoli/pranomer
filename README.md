@@ -1,3 +1,3 @@
-<center> <h1> taskbox </h1> </center>
+# taskbox
 
 A taskell inspired terminal agile board.

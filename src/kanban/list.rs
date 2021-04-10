@@ -43,31 +43,23 @@ impl List {
 
     pub fn remove_curr_task(&mut self) -> Option<Task>
     {
-        match self.task_id {
-            Some(id) => {
-                let task = self.tasks.remove(id);
+        self.task_id.map(|id| {
+            let task = self.tasks.remove(id);
 
-                if self.tasks.len() > 0 {
-                    if id >= self.tasks.len() {
-                        self.task_id = Some(id - 1);
-                    }
-                } else {
-                    self.task_id = None;
+            if self.tasks.len() > 0 {
+                if id >= self.tasks.len() {
+                    self.task_id = Some(id - 1);
                 }
+            } else {
+                self.task_id = None
+            }
 
-                Some(task)
-            },
-            None => None
-        }
+            task
+        })
     }
 
     pub fn curr_task(&mut self) -> Option<&mut Task>
     {
-        match self.task_id {
-            Some(id) => {
-                Some(&mut self.tasks[id])
-            },
-            None => None
-        }
+        self.task_id.map(move |id| &mut self.tasks[id])
     }
 }

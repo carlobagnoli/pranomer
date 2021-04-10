@@ -1,13 +1,15 @@
 use super::subtask::SubTask;
 
+use rustbox::Color;
+
 #[derive(Clone)]
 pub struct Decorator {
     pub value: String,
-    pub color: rustbox::Color
+    pub color: Color
 }
 
 impl Decorator {
-    pub fn new(value: String, color: rustbox::Color) -> Self
+    pub fn new(value: String, color: Color) -> Self
     {
         Decorator {
             value,
@@ -18,14 +20,14 @@ impl Decorator {
 
 pub struct Task {
     pub title: String,
+    pub title_cursor_point: usize,
     pub description: String,
+    pub description_cursor_point: usize,
     pub decorators: Vec<Decorator>,
     pub y: usize,
     pub height: usize,
-    pub title_cursor_point: usize,
-    pub description_cursor_point: usize,
-    pub subtask_id: Option<usize>,
     pub subtasks: Vec<SubTask>,
+    pub subtask_id: Option<usize>,
 }
 
 impl Task {
@@ -33,14 +35,14 @@ impl Task {
     {
         Task {
             title: String::new(),
+            title_cursor_point: 0,
             description: String::new(),
+            description_cursor_point: 0,
             decorators: vec![],
             y: 0,
             height: 1,
-            title_cursor_point: 0,
-            description_cursor_point: 0,
+            subtasks: vec![],
             subtask_id: None,
-            subtasks: vec![]
         }
     }
 
@@ -86,22 +88,19 @@ impl Task {
 
     pub fn remove_curr_subtask(&mut self) -> Option<SubTask>
     {
-        match self.subtask_id {
-            Some(id) => {
-                let subtask = self.subtasks.remove(id);
+        self.subtask_id.map(|id| {
+            let subtask = self.subtasks.remove(id);
 
-                if self.subtasks.len() > 0 {
-                    if id >= self.subtasks.len() {
-                        self.subtask_id = Some(id - 1);
-                    }
-                } else {
-                    self.subtask_id = None;
+            if self.subtasks.len() > 0 {
+                if id >= self.subtasks.len() {
+                    self.subtask_id = Some(id - 1);
                 }
+            } else {
+                self.subtask_id = None;
+            }
 
-                Some(subtask)
-            },
-            None => None
-        }
+            subtask
+        })
     }
 
     pub fn cleanup_subtasks(&mut self)
@@ -124,30 +123,25 @@ impl Task {
 
     pub fn curr_subtask(&mut self) -> Option<&mut SubTask>
     {
-        match self.subtask_id {
-            Some(id) => Some(&mut self.subtasks[id]),
-            None     => None
-        }
+        self.subtask_id.map(move |id| &mut self.subtasks[id])
     }
 
     pub fn move_subtask_up(&mut self)
     {
-        if let Some(id) = self.subtask_id {
-            if id > 0 {
+        self.subtask_id.filter(|id| *id > 0)
+            .map(|id| {
                 self.subtasks.swap(id, id - 1);
                 self.subtask_id = Some(id - 1);
-            }
-        }
+            });
     }
 
     pub fn move_subtask_down(&mut self)
     {
-        if let Some(id) = self.subtask_id {
-            if id < self.subtasks.len() - 1 {
+        self.subtask_id.filter(|id| *id < self.subtasks.len() - 1)
+            .map(|id| {
                 self.subtasks.swap(id, id + 1);
                 self.subtask_id = Some(id + 1);
-            }
-        }
+            });
     }
 
     pub fn push_decorator(&mut self, value: String, color: rustbox::Color)
@@ -160,7 +154,7 @@ impl Task {
         self.decorators.clear();
 
         if self.description.len() > 0 {
-            self.push_decorator(String::from("☰"), rustbox::Color::Yellow);
+            self.push_decorator(String::from("☰"), Color::Yellow);
         }
 
         if self.subtasks.len() > 0 {
@@ -174,7 +168,7 @@ impl Task {
 
             self.push_decorator(
                 format!("[{}/{}]", sum, self.subtasks.len()),
-                rustbox::Color::Yellow
+                Color::Yellow
             );
         }
     }
