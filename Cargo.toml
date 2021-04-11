@@ -1,6 +1,6 @@
 [package]
-name = "taskbox"
-version = "0.0.2"
+name = "pranomer"
+version = "0.0.3"
 authors = ["Carlo-Bagnoli <carlo.bagnoli.gomez@gmail.com>"]
 edition = "2018"
 

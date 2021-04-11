@@ -78,6 +78,13 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ac74c624d6b2d21f425f752262f42188365d7b8ff1aff74c82e45136510a4857"
 
 [[package]]
+name = "pranomer"
+version = "0.0.2"
+dependencies = [
+ "rustbox",
+]
+
+[[package]]
 name = "rand"
 version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -145,13 +152,6 @@ dependencies = [
  "gag",
  "num-traits 0.1.43",
  "termbox-sys",
-]
-
-[[package]]
-name = "taskbox"
-version = "0.0.2"
-dependencies = [
- "rustbox",
 ]
 
 [[package]]
