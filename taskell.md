@@ -1,9 +1,9 @@
 ## TO DO
 
-- Add a cursor, to see where the input is
-    > Render a cursor at the cursor position.
 - Output contents into a markdown file.
     > Dump all info into a markdown file for keeping the data
+- Add a cursor, to see where the input is
+    > Render a cursor at the cursor position.
 - Render the task titles with correct hyphenation.
     > The task titles cut words out of nowhere, so, we need to a better hyphenation system.
 - Create a Backlog list in a separate tab

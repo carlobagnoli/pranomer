@@ -218,11 +218,9 @@ fn subtask_insert_events(app: &mut App, key: rustbox::keyboard::Key)
             }
         },
         Key::Char(c) => {
-            if let Some(task) = app.curr_task() {
-                if let Some(subtask) = task.curr_subtask() {
-                    subtask.insert_to_title(c);
-                }
-            }
+            app.curr_task()
+               .and_then(|task| task.curr_subtask())
+               .map(|subtask| subtask.insert_to_title(c));
         },
         _ => {}
     }
