@@ -1,8 +1,8 @@
 extern crate rustbox;
 
-mod kanban;
+mod agile;
 
-use kanban::{app, event, fileio};
+use agile::{event, fileio, Agile};
 use std::default::Default;
 use rustbox::RustBox;
 
@@ -20,11 +20,11 @@ fn main() -> std::io::Result<()>{
         "kanban.md"
     };
 
-    let mut app: app::App = fileio::read_kanban_from_file(path).unwrap_or(app::App::new());
+    let mut agile: Agile = fileio::read_kanban_from_file(path).unwrap_or(Agile::new());
 
-    event::main_loop(&rustbox, &mut app);
+    event::main_loop(&rustbox, &mut agile);
 
-    fileio::output_contents_to_file(path, &mut app)?;
+    fileio::output_contents_to_file(path, &mut agile)?;
 
     Ok(())
 }

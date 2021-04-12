@@ -29,10 +29,10 @@
 - Add scroll for subtasks
 - Add Color Tags with unicode characters
 - Create a tab system
-- Refactor Code
 
 ## IN PROGRESS
 
+- Refactor Code
 
 ## CLOGGED
 

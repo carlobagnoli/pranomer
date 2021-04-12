@@ -1,8 +1,8 @@
-use super::app::App;
+use super::Agile;
 use std::fs;
 use std::io::prelude::*;
 
-pub fn output_contents_to_file(path: &str, app: &mut App) -> std::io::Result<()>
+pub fn output_contents_to_file(path: &str, app: &mut Agile) -> std::io::Result<()>
 {
     let mut f = fs::File::create(path).expect("Unable to create file!");
 
@@ -29,14 +29,14 @@ pub fn output_contents_to_file(path: &str, app: &mut App) -> std::io::Result<()>
     Ok(())
 }
 
-pub fn read_kanban_from_file(path: &str) -> std::io::Result<App>
+pub fn read_kanban_from_file(path: &str) -> std::io::Result<Agile>
 {
     let mut f = fs::File::open(path)?;
 
     let mut contents = String::new();
     f.read_to_string(&mut contents)?;
 
-    let mut kanban: App = App::new();
+    let mut kanban: Agile = Agile::new();
 
     for line in contents.lines() {
         if line.starts_with("## ") {

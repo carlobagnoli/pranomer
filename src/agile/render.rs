@@ -1,6 +1,6 @@
 extern crate rustbox;
 
-use super::app::App;
+use super::Agile;
 use super::event::InputMode;
 
 pub struct Rect {
@@ -36,7 +36,7 @@ pub fn popup(rustbox: &rustbox::RustBox, rect: &Rect) {
     }
 }
 
-pub fn lists(rustbox: &rustbox::RustBox, app: &mut App)
+pub fn lists(rustbox: &rustbox::RustBox, app: &mut Agile)
 {
     for (i, list) in app.lists.iter().enumerate() {
         let mut text = &list.title[0..28.min(list.title.len())];
@@ -56,7 +56,7 @@ pub fn lists(rustbox: &rustbox::RustBox, app: &mut App)
     }
 }
 
-pub fn tasks(rustbox: &rustbox::RustBox, app: &mut App)
+pub fn tasks(rustbox: &rustbox::RustBox, app: &mut Agile)
 {
         /* Update tasks */
     for i in 0..app.lists.len() {
@@ -110,7 +110,7 @@ pub fn tasks(rustbox: &rustbox::RustBox, app: &mut App)
     }
 }
 
-pub fn details(rustbox: &rustbox::RustBox, app: &mut App)
+pub fn details(rustbox: &rustbox::RustBox, app: &mut Agile)
 {
     if rustbox.width() < 10 || rustbox.height() < 5 { return; }
 
@@ -199,7 +199,7 @@ pub fn details(rustbox: &rustbox::RustBox, app: &mut App)
     }
 }
 
-pub fn info_bar(rustbox: &rustbox::RustBox, app: &mut App)
+pub fn info_bar(rustbox: &rustbox::RustBox, app: &mut Agile)
 {
     let input_mode = match app.input_mode {
         InputMode::NORMAL              =>  "NORMAL",

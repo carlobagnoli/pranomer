@@ -2,7 +2,7 @@ extern crate rustbox;
 
 use rustbox::Key;
 
-use super::app::App;
+use super::app::Agile;
 use super::render;
 
 pub enum InputMode {
@@ -14,7 +14,7 @@ pub enum InputMode {
     SUBTASK_INSERT,
 }
 
-fn normal_events(app: &mut App, key: rustbox::keyboard::Key)
+fn normal_events(app: &mut Agile, key: rustbox::keyboard::Key)
 {
     match key {
         Key::Char('A') => {
@@ -85,7 +85,7 @@ fn normal_events(app: &mut App, key: rustbox::keyboard::Key)
     }
 }
 
-fn insert_events(app: &mut App, key: rustbox::keyboard::Key)
+fn insert_events(app: &mut Agile, key: rustbox::keyboard::Key)
 {
     match key {
         Key::Esc => {
@@ -101,7 +101,7 @@ fn insert_events(app: &mut App, key: rustbox::keyboard::Key)
     }
 }
 
-fn list_insert_events(app: &mut App, key: rustbox::keyboard::Key)
+fn list_insert_events(app: &mut Agile, key: rustbox::keyboard::Key)
 {
     match key {
         Key::Esc => {
@@ -117,7 +117,7 @@ fn list_insert_events(app: &mut App, key: rustbox::keyboard::Key)
     }
 }
 
-fn detail_events(app: &mut App, key: rustbox::keyboard::Key)
+fn detail_events(app: &mut Agile, key: rustbox::keyboard::Key)
 {
     match key {
         Key::Esc => {
@@ -184,7 +184,7 @@ fn detail_events(app: &mut App, key: rustbox::keyboard::Key)
     }
 }
 
-fn description_insert_events(app: &mut App, key: rustbox::keyboard::Key)
+fn description_insert_events(app: &mut Agile, key: rustbox::keyboard::Key)
 {
     match key {
         Key::Esc => {
@@ -204,7 +204,7 @@ fn description_insert_events(app: &mut App, key: rustbox::keyboard::Key)
     }
 }
 
-fn subtask_insert_events(app: &mut App, key: rustbox::keyboard::Key)
+fn subtask_insert_events(app: &mut Agile, key: rustbox::keyboard::Key)
 {
     match key {
         Key::Esc => {
@@ -226,7 +226,7 @@ fn subtask_insert_events(app: &mut App, key: rustbox::keyboard::Key)
     }
 }
 
-pub fn main_loop(rustbox: &rustbox::RustBox, app: &mut App) {
+pub fn main_loop(rustbox: &rustbox::RustBox, app: &mut Agile) {
     'main: loop {
         rustbox.clear();
         if let InputMode::NORMAL = app.input_mode {

@@ -1,14 +1,25 @@
-use super::{event::InputMode, list::List, task::Task};
+extern crate rustbox;
 
-pub struct App {
+pub mod render;
+pub mod list;
+pub mod event;
+pub mod task;
+pub mod subtask;
+pub mod fileio;
+
+use event::InputMode;
+use list::List;
+use task::Task;
+
+pub struct Agile {
     pub input_mode: InputMode,
     pub list_id: Option<usize>,
     pub lists: Vec<List>,
 }
 
-impl App {
+impl Agile {
     pub fn new() -> Self {
-        App {
+        Agile {
             input_mode: InputMode::NORMAL,
             list_id: None,
             lists: vec![],
