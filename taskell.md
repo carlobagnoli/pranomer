@@ -4,7 +4,6 @@
     > Render a cursor at the cursor position.
 - Render the task titles with correct hyphenation.
     > The task titles cut words out of nowhere, so, we need to a better hyphenation system.
-- Create a Backlog list in a separate tab
 - Create a separate "Done Pile"/"Done List"
     > When a task is done, and has been so for a while, it shouldn't waste space in the done list, hence, we should separate the done tasks in a similar way to the Backlog.
 - Add INSERT functions
@@ -32,8 +31,7 @@
 
 ## IN PROGRESS
 
-- Create a tab system
-    > It's kinda harder to do than I thought
+- Add a tab bar
 
 ## CLOGGED
 
@@ -52,6 +50,8 @@
     * [ ] Add priorities
     * [ ] Add dates
     * [ ] Add weights
+- Create a tab system
+    > It's kinda harder to do than I thought
 
 ## DONE
 
@@ -72,3 +72,4 @@
 - Output contents into a markdown file.
     > Dump all info into a markdown file for keeping the data
 - Refactor Code
+- Create a Backlog list in a separate tab

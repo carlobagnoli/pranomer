@@ -259,12 +259,145 @@ pub fn backlog(rustbox: &rustbox::RustBox, agile: &mut Agile)
 
     let sep = ((w - 10f32) - ((w as usize / 36) * 36) as f32)/((w as usize / 36 - 1) as f32);
 
-    for i in 0..rustbox.width()/36 {
-        let sep_rects = (i as f32 * (36f32 + sep)).round() as usize;
+    for (i, task) in agile.backlog.iter().enumerate() {
+        let sep_rects = ((i%((w as usize)/36)) as f32 * (36f32 + sep)).round() as usize % (w as usize - 10);
+
         let area: Rect = Rect {
-            x: 5 + sep_rects, y: 3, width: 32 + 2, height: 10 + 2
+            x: 5 + sep_rects, y: 3 + (i/((w as usize)/36))*12, width: 32 + 2, height: 9 + 2
         };
 
         popup(rustbox, &area);
+
+        let text_height = (((task.title.chars().count() as f32)/30f32).ceil() as usize).min(4);
+
+        for j in 0..text_height {
+            rustbox.print(
+                area.x + 2,
+                area.y + 1 + j,
+                rustbox::RB_NORMAL,
+                if agile.backlog_id.unwrap() == i {rustbox::Color::Magenta} else {rustbox::Color::Default},
+                rustbox::Color::Default,
+                &task.title[(j*30)..((j+1)*30).min(task.title.chars().count())]
+            );
+        }
+
+        if !task.description.is_empty() {
+            rustbox.print(
+                area.x + 2,
+                area.y + 1 + text_height + 1,
+                rustbox::RB_NORMAL,
+                rustbox::Color::Default,
+                rustbox::Color::Default,
+                format!("> {}...", &task.description[0..(25).min(task.description.chars().count())]).as_str()
+            );
+        }
+
+        let mut deco_sum = 0;
+        for decorator in task.decorators.iter() {
+            rustbox.print(
+                area.x + 2 + deco_sum,
+                area.y + area.height - 2,
+                rustbox::RB_NORMAL,
+                decorator.color,
+                rustbox::Color::Default,
+                format!("{}", decorator.value).as_str()
+            );
+
+            deco_sum += decorator.value.chars().count() + 1;
+        }
+    }
+}
+
+pub fn backlog_details(rustbox: &rustbox::RustBox, agile: &mut Agile)
+{
+    if rustbox.width() < 10 || rustbox.height() < 5 { return; }
+
+    agile.curr_backlog_task().map(|task| {
+        task.update_decorators();
+    });
+
+    let area: Rect = Rect {
+        x: if rustbox.width()/2 > 32 {rustbox.width()/2 - 32} else {5},
+        y: (5).min(rustbox.height()/10).max(1),
+        width: if rustbox.width()/2 > 32 {64} else {rustbox.width() - 10},
+        height: rustbox.height() - (10).min(rustbox.height()/5).max(2)
+    };
+
+    popup(rustbox, &area);
+
+    let mut text_width = area.width - 10;
+
+    let title = agile.curr_backlog_task().unwrap().title.clone();
+
+    for i in 0..title.len()/text_width + 1 {
+        rustbox.print(
+            area.x + 5,
+            area.y + 2 + i,
+            rustbox::RB_NORMAL,
+            rustbox::Color::Green,
+            rustbox::Color::Default,
+            &title[i*text_width..((i+1)*text_width).min(title.len())]
+        );
+    }
+
+    let mut description = agile.curr_backlog_task().unwrap().description.clone();
+
+    if description.len() == 0 {
+        description = String::from("No description");
+    }
+
+    for i in 0..description.len()/text_width + 1 {
+        let y = area.y + (title.len()/text_width + 1) + i + 4;
+
+        if y < rustbox.height() - area.y - 2 {
+            rustbox.print(
+                area.x + 4,
+                y,
+                rustbox::RB_NORMAL,
+                rustbox::Color::Default,
+                rustbox::Color::Default,
+                &description[i*text_width..((i+1)*text_width).min(description.len())]
+            );
+        }
+    }
+
+    text_width -= 4;
+
+    if let Some(subtask_id) = agile.curr_backlog_task().unwrap().subtask_id {
+        let mut sum = 0;
+
+        for (i, subtask) in agile.curr_backlog_task().unwrap().subtasks.iter().enumerate() {
+            let y = area.y + title.len()/text_width + description.len()/text_width + sum + i + 9;
+
+            for j in 0..subtask.title.len()/text_width + 1 {
+                let text: String;
+                if j == 0 {
+                    text = format!(
+                        "[{}] {}",
+                        if subtask.done {"x"} else {" "},
+                        &subtask.title[j*text_width..((j+1)*text_width).min(subtask.title.len())]
+                    )
+                } else {
+                    text = format!(
+                        "    {}",
+                        &subtask.title[j*text_width..((j+1)*text_width).min(subtask.title.len())]
+                    )
+                };
+
+                if y + j < rustbox.height() - area.y - 2 {
+                    rustbox.print(
+                        area.x + 5,
+                        y + j,
+                        rustbox::RB_NORMAL,
+                        if subtask_id == i {rustbox::Color::Magenta}
+                        else {if subtask.done {rustbox::Color::Yellow} else {rustbox::Color::Blue}},
+                        rustbox::Color::Default,
+                        text.as_str()
+                    );
+                }
+            }
+
+            sum += subtask.title.len()/text_width + 1;
+        }
     }
 }

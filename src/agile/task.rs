@@ -18,6 +18,7 @@ impl Decorator {
     }
 }
 
+#[derive(Clone)]
 pub struct Task {
     pub title: String,
     pub title_cursor_point: usize,
