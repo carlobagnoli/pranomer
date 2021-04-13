@@ -28,11 +28,12 @@
 - Add scroll for tasks
 - Add scroll for subtasks
 - Add Color Tags with unicode characters
-- Create a tab system
+- Add a way to move a list
 
 ## IN PROGRESS
 
-- Refactor Code
+- Create a tab system
+    > It's kinda harder to do than I thought
 
 ## CLOGGED
 
@@ -54,14 +55,6 @@
 
 ## DONE
 
-- Add decorators to list titles
-- Add an info bar at the bottom
-- Add a description for all tasks
-- Limit the number of characters in list titles
-- Create a function to delete lists
-- Create a function to delete tasks
-- Add the move task from list to list functionality
-- Add the move task up and down the list functionality
 - Delete automatically all lists that don't have a title
 - Delete automatically all tasks that don't have a title
 - Clean up the code
@@ -78,3 +71,4 @@
 - Read app struct from file contents
 - Output contents into a markdown file.
     > Dump all info into a markdown file for keeping the data
+- Refactor Code

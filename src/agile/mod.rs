@@ -15,6 +15,11 @@ pub struct Agile {
     pub input_mode: InputMode,
     pub list_id: Option<usize>,
     pub lists: Vec<List>,
+    pub tab: event::Tab,
+    pub backlog: Vec<Task>,
+    pub backlog_id: Option<usize>,
+    pub done: Vec<Task>,
+    pub done_id: Option<usize>,
 }
 
 impl Agile {
@@ -23,6 +28,11 @@ impl Agile {
             input_mode: InputMode::NORMAL,
             list_id: None,
             lists: vec![],
+            tab: event::Tab::AGILE_BOARD,
+            backlog: vec![],
+            backlog_id: None,
+            done: vec![],
+            done_id: None,
         }
     }
 
@@ -149,5 +159,59 @@ impl Agile {
                 }
             }
         }
+    }
+
+    pub fn push_backlog_task(&mut self)
+    {
+        self.backlog.push(Task::new());
+
+        self.backlog_id = Some(self.backlog.len() - 1);
+    }
+
+    pub fn remove_backlog_task(&mut self)
+    {
+        self.backlog_id.map(|id| {
+            self.backlog.remove(id);
+
+            if self.backlog.len() > 0 {
+                if id > 0 {
+                    self.backlog_id = Some(id - 1);
+                }
+            } else {
+                self.backlog_id = None;
+            }
+        });
+    }
+
+    pub fn curr_backlog_task(&mut self) -> Option<&mut Task>
+    {
+        self.backlog_id.map(move |id| &mut self.backlog[id])
+    }
+
+    pub fn push_done_task(&mut self)
+    {
+        self.done.push(Task::new());
+
+        self.done_id = Some(self.done.len() - 1);
+    }
+
+    pub fn remove_done_task(&mut self)
+    {
+        self.done_id.map(|id| {
+            self.done.remove(id);
+
+            if self.done.len() > 0 {
+                if id > 0 {
+                    self.done_id = Some(id - 1);
+                }
+            } else {
+                self.done_id = None;
+            }
+        });
+    }
+
+    pub fn curr_done_task(&mut self) -> Option<&mut Task>
+    {
+        self.done_id.map(move |id| &mut self.done[id])
     }
 }

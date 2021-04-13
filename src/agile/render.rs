@@ -36,9 +36,9 @@ pub fn popup(rustbox: &rustbox::RustBox, rect: &Rect) {
     }
 }
 
-pub fn lists(rustbox: &rustbox::RustBox, app: &mut Agile)
+pub fn lists(rustbox: &rustbox::RustBox, agile: &mut Agile)
 {
-    for (i, list) in app.lists.iter().enumerate() {
+    for (i, list) in agile.lists.iter().enumerate() {
         let mut text = &list.title[0..28.min(list.title.len())];
 
         if text.len() == 0 {
@@ -49,55 +49,55 @@ pub fn lists(rustbox: &rustbox::RustBox, app: &mut Agile)
             i*35 + 3,
             1,
             rustbox::RB_NORMAL,
-            if app.list_id.unwrap() == i {rustbox::Color::Blue} else {rustbox::Color::Green},
+            if agile.list_id.unwrap() == i {rustbox::Color::Blue} else {rustbox::Color::Green},
             rustbox::Color::Default,
             format!("{}. {}", i + 1, text).as_str()
         );
     }
 }
 
-pub fn tasks(rustbox: &rustbox::RustBox, app: &mut Agile)
+pub fn tasks(rustbox: &rustbox::RustBox, agile: &mut Agile)
 {
         /* Update tasks */
-    for i in 0..app.lists.len() {
+    for i in 0..agile.lists.len() {
         let mut sum: usize = 3;
 
-        for j in 0..app.lists[i].tasks.len() {
-            app.lists[i].tasks[j].update_decorators();
-            app.lists[i].tasks[j].height = app.lists[i].tasks[j].title.len() / 32 + 1;
-            app.lists[i].tasks[j].y = sum;
-            sum += app.lists[i].tasks[j].height + 1;
-            if app.lists[i].tasks[j].decorators.len() > 0 {
+        for j in 0..agile.lists[i].tasks.len() {
+            agile.lists[i].tasks[j].update_decorators();
+            agile.lists[i].tasks[j].height = agile.lists[i].tasks[j].title.len() / 32 + 1;
+            agile.lists[i].tasks[j].y = sum;
+            sum += agile.lists[i].tasks[j].height + 1;
+            if agile.lists[i].tasks[j].decorators.len() > 0 {
                 sum += 1;
             }
         }
     }
 
         /* Render all tasks */
-    for i in 0..app.lists.len() {
-        for j in 0..app.lists[i].tasks.len() {
-            for k in 0..app.lists[i].tasks[j].height {
+    for i in 0..agile.lists.len() {
+        for j in 0..agile.lists[i].tasks.len() {
+            for k in 0..agile.lists[i].tasks[j].height {
                 rustbox.print(
                     i*35 + 3,
-                    app.lists[i].tasks[j].y + k,
+                    agile.lists[i].tasks[j].y + k,
                     rustbox::RB_NORMAL,
-                    if app.list_id.unwrap() == i && app.lists[app.list_id.unwrap()].task_id.unwrap() == j
+                    if agile.list_id.unwrap() == i && agile.lists[agile.list_id.unwrap()].task_id.unwrap() == j
                     {rustbox::Color::Magenta} else {rustbox::Color::Default},
                     rustbox::Color::Default,
-                    &app.lists[i]
+                    &agile.lists[i]
                     .tasks[j]
-                    .title[k*32..((k+1)*32).min(app.lists[i].tasks[j].title.len())]
+                    .title[k*32..((k+1)*32).min(agile.lists[i].tasks[j].title.len())]
                 );
             }
-            if app.lists[i].tasks[j].decorators.len() > 0 {
+            if agile.lists[i].tasks[j].decorators.len() > 0 {
                 let mut deco_sum = 0;
 
-                for k in 0..app.lists[i].tasks[j].decorators.len() {
-                    let decorator = app.lists[i].tasks[j].decorators[k].clone();
+                for k in 0..agile.lists[i].tasks[j].decorators.len() {
+                    let decorator = agile.lists[i].tasks[j].decorators[k].clone();
 
                     rustbox.print(
                         i*35 + 3 + deco_sum,
-                        app.lists[i].tasks[j].y + app.lists[i].tasks[j].height,
+                        agile.lists[i].tasks[j].y + agile.lists[i].tasks[j].height,
                         rustbox::RB_NORMAL,
                         decorator.color,
                         rustbox::Color::Default,
@@ -110,7 +110,7 @@ pub fn tasks(rustbox: &rustbox::RustBox, app: &mut Agile)
     }
 }
 
-pub fn details(rustbox: &rustbox::RustBox, app: &mut Agile)
+pub fn details(rustbox: &rustbox::RustBox, agile: &mut Agile)
 {
     if rustbox.width() < 10 || rustbox.height() < 5 { return; }
 
@@ -125,7 +125,7 @@ pub fn details(rustbox: &rustbox::RustBox, app: &mut Agile)
 
     let mut text_width = area.width - 10;
 
-    let title = app.curr_task().unwrap().title.clone();
+    let title = agile.curr_task().unwrap().title.clone();
 
     for i in 0..title.len()/text_width + 1 {
         rustbox.print(
@@ -138,7 +138,7 @@ pub fn details(rustbox: &rustbox::RustBox, app: &mut Agile)
         );
     }
 
-    let mut description = app.curr_task().unwrap().description.clone();
+    let mut description = agile.curr_task().unwrap().description.clone();
 
     if description.len() == 0 {
         description = String::from("No description");
@@ -161,10 +161,10 @@ pub fn details(rustbox: &rustbox::RustBox, app: &mut Agile)
 
     text_width -= 4;
 
-    if let Some(subtask_id) = app.curr_task().unwrap().subtask_id {
+    if let Some(subtask_id) = agile.curr_task().unwrap().subtask_id {
         let mut sum = 0;
 
-        for (i, subtask) in app.curr_task().unwrap().subtasks.iter().enumerate() {
+        for (i, subtask) in agile.curr_task().unwrap().subtasks.iter().enumerate() {
             let y = area.y + title.len()/text_width + description.len()/text_width + sum + i + 9;
 
             for j in 0..subtask.title.len()/text_width + 1 {
@@ -199,24 +199,28 @@ pub fn details(rustbox: &rustbox::RustBox, app: &mut Agile)
     }
 }
 
-pub fn info_bar(rustbox: &rustbox::RustBox, app: &mut Agile)
+pub fn info_bar(rustbox: &rustbox::RustBox, agile: &mut Agile)
 {
-    let input_mode = match app.input_mode {
+    let input_mode = match agile.input_mode {
         InputMode::NORMAL              =>  "NORMAL",
         InputMode::INSERT              =>  "INSERT",
         InputMode::LIST_INSERT         =>  "LIST INSERT",
         InputMode::DETAIL              =>  "DETAIL",
         InputMode::DESCRIPTION_INSERT  =>  "DESCRIPTION_INSERT",
         InputMode::SUBTASK_INSERT      =>  "SUBTASK_INSERT",
+        InputMode::BACKLOG             =>  "BACKLOG",
+        InputMode::BACKLOG_INSERT      =>  "BACKLOG_INSERT",
+        InputMode::DONE_MODE           =>  "DONE_MODE",
+        InputMode::DONE_INSERT         =>  "DONE_INSERT",
         _ => "MODE MISSING"
     };
 
     let task_scroll: String;
 
-    if app.lists.len() > 0 {
-        if app.curr_list().unwrap().tasks.len() > 0 {
-            let scroll_max  = app.curr_list().unwrap().tasks.len();
-            let scroll_curr = app.curr_list().unwrap().task_id.unwrap() + 1;
+    if agile.lists.len() > 0 {
+        if agile.curr_list().unwrap().tasks.len() > 0 {
+            let scroll_max  = agile.curr_list().unwrap().tasks.len();
+            let scroll_curr = agile.curr_list().unwrap().task_id.unwrap() + 1;
 
             task_scroll = format!("{}% ☰ {}/{}", (scroll_curr * 100)/scroll_max, scroll_curr, scroll_max);
         } else {
@@ -238,4 +242,29 @@ pub fn info_bar(rustbox: &rustbox::RustBox, app: &mut Agile)
         rustbox::Color::Blue,
         bar.as_str()
     );
+}
+
+pub fn backlog(rustbox: &rustbox::RustBox, agile: &mut Agile)
+{
+    let w: f32 = rustbox.width() as f32;
+
+    rustbox.print(
+        rustbox.width()/2 - 3,
+        1,
+        rustbox::RB_NORMAL,
+        rustbox::Color::Yellow,
+        rustbox::Color::Default,
+        "BACKLOG"
+    );
+
+    let sep = ((w - 10f32) - ((w as usize / 36) * 36) as f32)/((w as usize / 36 - 1) as f32);
+
+    for i in 0..rustbox.width()/36 {
+        let sep_rects = (i as f32 * (36f32 + sep)).round() as usize;
+        let area: Rect = Rect {
+            x: 5 + sep_rects, y: 3, width: 32 + 2, height: 10 + 2
+        };
+
+        popup(rustbox, &area);
+    }
 }

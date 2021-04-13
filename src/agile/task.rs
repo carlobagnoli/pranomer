@@ -49,6 +49,7 @@ impl Task {
     pub fn insert_to_title(&mut self, c: char)
     {
             /* TODO: BUG: unicode characters don't render properly */
+            /* Example: the ñ character crashes the app */
         self.title.insert(self.title_cursor_point, c);
 
         self.title_cursor_point += 1;
