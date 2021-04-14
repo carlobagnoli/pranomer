@@ -447,6 +447,8 @@ pub fn main_loop(rustbox: &rustbox::RustBox, agile: &mut Agile) {
             Tab::BACKLOG     =>     backlog_renders(rustbox, agile),
             _ => {}
         }
+
+        render::tab_bar(rustbox, agile);
         render::info_bar(rustbox, agile);
 
         rustbox.present();

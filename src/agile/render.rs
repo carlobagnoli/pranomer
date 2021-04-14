@@ -1,7 +1,7 @@
 extern crate rustbox;
 
 use super::Agile;
-use super::event::InputMode;
+use super::event::{InputMode, Tab};
 
 pub struct Rect {
     pub x: usize,
@@ -47,7 +47,7 @@ pub fn lists(rustbox: &rustbox::RustBox, agile: &mut Agile)
 
         rustbox.print(
             i*35 + 3,
-            1,
+            2,
             rustbox::RB_NORMAL,
             if agile.list_id.unwrap() == i {rustbox::Color::Blue} else {rustbox::Color::Green},
             rustbox::Color::Default,
@@ -60,7 +60,7 @@ pub fn tasks(rustbox: &rustbox::RustBox, agile: &mut Agile)
 {
         /* Update tasks */
     for i in 0..agile.lists.len() {
-        let mut sum: usize = 3;
+        let mut sum: usize = 4;
 
         for j in 0..agile.lists[i].tasks.len() {
             agile.lists[i].tasks[j].update_decorators();
@@ -244,18 +244,41 @@ pub fn info_bar(rustbox: &rustbox::RustBox, agile: &mut Agile)
     );
 }
 
+pub fn tab_bar(rustbox: &rustbox::RustBox, agile: &mut Agile)
+{
+    let tabs = [Tab::AGILE_BOARD, Tab::BACKLOG];
+
+    rustbox.print(
+        0,
+        0,
+        rustbox::RB_NORMAL,
+        rustbox::Color::Black,
+        if let Tab::AGILE_BOARD = agile.tab {rustbox::Color::Yellow} else {rustbox::Color::Blue},
+        "  1. AGILE BOARD  "
+    );
+
+    rustbox.print(
+        18,
+        0,
+        rustbox::RB_NORMAL,
+        rustbox::Color::Black,
+        if let Tab::BACKLOG = agile.tab {rustbox::Color::Yellow} else {rustbox::Color::Blue},
+        "  2. BACKLOG  "
+    );
+
+    rustbox.print(
+        32,
+        0,
+        rustbox::RB_NORMAL,
+        rustbox::Color::Default,
+        rustbox::Color::Blue,
+        format!("{}", " ".repeat(rustbox.width() - 26)).as_str()
+    );
+}
+
 pub fn backlog(rustbox: &rustbox::RustBox, agile: &mut Agile)
 {
     let w: f32 = rustbox.width() as f32;
-
-    rustbox.print(
-        rustbox.width()/2 - 3,
-        1,
-        rustbox::RB_NORMAL,
-        rustbox::Color::Yellow,
-        rustbox::Color::Default,
-        "BACKLOG"
-    );
 
     let sep = ((w - 10f32) - ((w as usize / 36) * 36) as f32)/((w as usize / 36 - 1) as f32);
 
@@ -263,7 +286,7 @@ pub fn backlog(rustbox: &rustbox::RustBox, agile: &mut Agile)
         let sep_rects = ((i%((w as usize)/36)) as f32 * (36f32 + sep)).round() as usize % (w as usize - 10);
 
         let area: Rect = Rect {
-            x: 5 + sep_rects, y: 3 + (i/((w as usize)/36))*12, width: 32 + 2, height: 9 + 2
+            x: 5 + sep_rects, y: 4 + (i/((w as usize)/36))*12, width: 32 + 2, height: 9 + 2
         };
 
         popup(rustbox, &area);
