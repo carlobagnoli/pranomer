@@ -25,11 +25,15 @@ pub enum InputMode {
         /* DONE TAB MODES */
     DONE_MODE,
     DONE_INSERT,
+    DONE_DETAIL,
+    DONE_DESCRIPTION_INSERT,
+    DONE_SUBTASK_INSERT
 }
 
 pub enum Tab {
     AGILE_BOARD,
     BACKLOG,
+    DONE_PILE,
 }
 
 fn normal_events(agile: &mut Agile, key: rustbox::keyboard::Key)
@@ -101,7 +105,10 @@ fn normal_events(agile: &mut Agile, key: rustbox::keyboard::Key)
         },
         Key::Char(' ') => {
             agile.curr_list().and_then(|list| list.remove_curr_task())
-                .map(|task| agile.done.push(task));
+                .map(|task| {
+                    agile.done.push(task);
+                    agile.done_id = Some(agile.done.len() - 1);
+                });
         },
         Key::Char('\u{0}') => {
             agile.curr_list().and_then(|list| list.remove_curr_task())
@@ -113,6 +120,10 @@ fn normal_events(agile: &mut Agile, key: rustbox::keyboard::Key)
         Key::Char('1') => {
             agile.tab = Tab::BACKLOG;
             agile.input_mode = InputMode::BACKLOG;
+        },
+        Key::Char('3') => {
+            agile.tab = Tab::DONE_PILE;
+            agile.input_mode = InputMode::DONE_MODE;
         },
         _ => {}
     }
@@ -269,6 +280,10 @@ fn backlog_events(agile: &mut Agile, key: rustbox::keyboard::Key, rustbox: &rust
             agile.tab        =  Tab::AGILE_BOARD;
             agile.input_mode = InputMode::NORMAL;
         },
+        Key::Char('3') => {
+            agile.tab        =  Tab::DONE_PILE;
+            agile.input_mode = InputMode::DONE_MODE;
+        },
         Key::Char('a') => {
             agile.push_backlog_task();
 
@@ -330,8 +345,7 @@ fn backlog_insert_events(agile: &mut Agile, key: rustbox::keyboard::Key)
     }
 }
 
-fn backlog_detail_events(agile: &mut Agile, key: rustbox::keyboard::Key)
-{
+fn backlog_detail_events(agile: &mut Agile, key: rustbox::keyboard::Key) {
     match key {
         Key::Esc   => agile.input_mode = InputMode::BACKLOG,
         Key::Enter => agile.input_mode = InputMode::BACKLOG_DESCRIPTION_INSERT,
@@ -427,6 +441,175 @@ fn backlog_description_insert_events(agile: &mut Agile, key: rustbox::keyboard::
     }
 }
 
+fn done_mode_events(agile: &mut Agile, key: rustbox::keyboard::Key, rustbox: &rustbox::RustBox)
+{
+    match key {
+        Key::Enter => {
+            agile.input_mode = InputMode::DONE_DETAIL;
+        },
+        Key::Char('2') => {
+            agile.tab        =  Tab::AGILE_BOARD;
+            agile.input_mode = InputMode::NORMAL;
+        },
+        Key::Char('1') => {
+            agile.tab        =  Tab::BACKLOG;
+            agile.input_mode = InputMode::BACKLOG;
+        },
+        Key::Char('a') => {
+            agile.push_done_task();
+
+            agile.input_mode = InputMode::DONE_INSERT;
+        },
+        Key::Char('e') => {
+            agile.input_mode = InputMode::DONE_INSERT;
+        },
+        Key::Char('h') => {
+            agile.done_id
+                .filter(|id| *id > 0)
+                .map(|id| agile.done_id = Some(id - 1));
+        },
+        Key::Char('j') => {
+            agile.done_id
+                .filter(|id| *id < agile.done.len() - ((rustbox.width() - 10) / 64))
+                .map(|id| agile.done_id = Some(id + ((rustbox.width() - 10) as f32 / 64f32).round() as usize));
+        },
+        Key::Char('k') => {
+            agile.done_id
+                .filter(|id| *id > ((rustbox.width() - 10) / 64))
+                .map(|id| agile.done_id = Some(id - ((rustbox.width() - 10) as f32 / 64f32).round() as usize));
+        },
+        Key::Char('l') => {
+            agile.done_id
+                .filter(|id| *id < agile.done.len() - 1)
+                .map(|id| agile.done_id = Some(id + 1));
+        },
+        Key::Char('D') => {
+            agile.remove_done_task();
+        },
+        Key::Char('\u{0}') => {
+            if !agile.lists.is_empty() {
+                agile.remove_done_task()
+                    .map(|task| agile.lists.last_mut()
+                         .map(|list| {
+                             list.tasks.push(task);
+                             list.task_id = Some(list.tasks.len() - 1);
+                         }));
+            }
+        },
+        _ => {}
+    }
+}
+
+fn done_insert_events(agile: &mut Agile, key: rustbox::keyboard::Key)
+{
+    match key {
+        Key::Esc => {
+            agile.input_mode = InputMode::DONE_MODE;
+        },
+        Key::Char(c) => {
+            agile.curr_done_task().map(|task| task.insert_to_title(c));
+        },
+        Key::Backspace => {
+            agile.curr_done_task().map(|task| task.remove_from_title());
+        },
+        _ => {}
+    }
+}
+
+fn done_detail_events(agile: &mut Agile, key: rustbox::keyboard::Key) {
+    match key {
+        Key::Esc   => agile.input_mode = InputMode::DONE_MODE,
+        Key::Enter => agile.input_mode = InputMode::DONE_DESCRIPTION_INSERT,
+        Key::Char(' ') => {
+            if let Some(subtask) = agile.curr_done_task().unwrap().curr_subtask() {
+                subtask.done = !subtask.done;
+
+                if let Some(id) = agile.curr_done_task().unwrap().subtask_id {
+                    if id < agile.curr_done_task().unwrap().subtasks.len() - 1 {
+                        agile.curr_done_task().unwrap().subtask_id = Some(id + 1);
+                    }
+                }
+            }
+        },
+        Key::Char('a') => {
+            if let Some(task) = agile.curr_done_task() {
+                task.push_subtasks();
+
+                agile.input_mode = InputMode::DONE_SUBTASK_INSERT;
+            }
+        },
+        Key::Char('e') => {
+            if agile.curr_done_task().unwrap().curr_subtask().is_some() {
+                agile.input_mode = InputMode::DONE_SUBTASK_INSERT;
+            }
+        },
+        Key::Char('j') => {
+            if let Some(task) = agile.curr_done_task() {
+                if let Some(id) = task.subtask_id {
+                    if id < task.subtasks.len() - 1 {
+                        task.subtask_id = Some(id + 1);
+                    }
+                }
+            }
+        },
+        Key::Char('k') => {
+            if let Some(task) = agile.curr_done_task() {
+                if let Some(id) = task.subtask_id {
+                    if id > 0 {
+                        task.subtask_id = Some(id - 1);
+                    }
+                }
+            }
+        },
+        Key::Char('J') => {
+            if let Some(task) = agile.curr_done_task() {
+                task.move_subtask_down();
+            }
+        },
+        Key::Char('K') => {
+            if let Some(task) = agile.curr_done_task() {
+                task.move_subtask_up();
+            }
+        },
+        Key::Char('D') => {
+            agile.curr_done_task().unwrap().remove_curr_subtask();
+        },
+        _ => {}
+    }
+}
+
+fn done_subtask_insert_events(agile: &mut Agile, key: rustbox::keyboard::Key)
+{
+    match key {
+        Key::Esc       => agile.input_mode = InputMode::DONE_DETAIL,
+        Key::Backspace => {
+            agile.curr_done_task()
+                .and_then(|task| task.curr_subtask())
+                .map(|subtask| subtask.remove_from_title());
+        },
+        Key::Char(c) => {
+            agile.curr_done_task()
+                .and_then(|task| task.curr_subtask())
+                .map(|subtask| subtask.insert_to_title(c));
+        },
+        _ => {}
+    }
+}
+
+fn done_description_insert_events(agile: &mut Agile, key: rustbox::keyboard::Key)
+{
+    match key {
+        Key::Esc => agile.input_mode = InputMode::DONE_DETAIL,
+        Key::Backspace => {
+            agile.curr_done_task().map(|task| task.remove_from_description());
+        },
+        Key::Char(c) => {
+            agile.curr_done_task().map(|task| task.insert_to_description(c));
+        },
+        _ => {}
+    }
+}
+
 fn agile_board_renders(rustbox: &rustbox::RustBox, agile: &mut Agile)
 {
     if let InputMode::NORMAL = agile.input_mode {
@@ -459,6 +642,20 @@ fn backlog_renders(rustbox: &rustbox::RustBox, agile: &mut Agile)
     }
 }
 
+fn done_renders(rustbox: &rustbox::RustBox, agile: &mut Agile)
+{
+    render::done_pile(rustbox, agile);
+
+    if let InputMode::DONE_DETAIL = agile.input_mode {
+        agile.curr_done_task().unwrap().cleanup_subtasks();
+    }
+
+    if let InputMode::DONE_DETAIL | InputMode::DONE_DESCRIPTION_INSERT 
+        | InputMode::DONE_SUBTASK_INSERT = agile.input_mode {
+        render::done_pile_details(rustbox, agile);
+    }
+}
+
 pub fn main_loop(rustbox: &rustbox::RustBox, agile: &mut Agile) {
     'main: loop {
         rustbox.clear();
@@ -466,6 +663,7 @@ pub fn main_loop(rustbox: &rustbox::RustBox, agile: &mut Agile) {
         match agile.tab {
             Tab::AGILE_BOARD => agile_board_renders(rustbox, agile),
             Tab::BACKLOG     =>     backlog_renders(rustbox, agile),
+            Tab::DONE_PILE   =>        done_renders(rustbox, agile),
             _ => {}
         }
 
@@ -488,14 +686,24 @@ pub fn main_loop(rustbox: &rustbox::RustBox, agile: &mut Agile) {
                     Key::Char('q') => break 'main,
                     _ => backlog_events(agile, key, rustbox),
                 },
+                InputMode::DONE_MODE => match key {
+                    Key::Char('q') => break 'main,
+                    _ => done_mode_events(agile, key, rustbox)
+                },
                 InputMode::INSERT                     =>                     insert_events(agile, key),
                 InputMode::LIST_INSERT                =>                list_insert_events(agile, key),
                 InputMode::DESCRIPTION_INSERT         =>         description_insert_events(agile, key),
                 InputMode::SUBTASK_INSERT             =>             subtask_insert_events(agile, key),
+
                 InputMode::BACKLOG_INSERT             =>             backlog_insert_events(agile, key),
                 InputMode::BACKLOG_SUBTASK_INSERT     =>     backlog_subtask_insert_events(agile, key),
                 InputMode::BACKLOG_DESCRIPTION_INSERT => backlog_description_insert_events(agile, key),
                 InputMode::BACKLOG_DETAIL             =>             backlog_detail_events(agile, key),
+
+                InputMode::DONE_INSERT                =>                done_insert_events(agile, key),
+                InputMode::DONE_DETAIL                =>                done_detail_events(agile, key),
+                InputMode::DONE_DESCRIPTION_INSERT    =>    done_description_insert_events(agile, key),
+                InputMode::DONE_SUBTASK_INSERT        =>        done_subtask_insert_events(agile, key),
                 _ => {}
             },
             Err(e) => panic!("{}", e),

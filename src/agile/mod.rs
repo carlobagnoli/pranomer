@@ -197,10 +197,10 @@ impl Agile {
         self.done_id = Some(self.done.len() - 1);
     }
 
-    pub fn remove_done_task(&mut self)
+    pub fn remove_done_task(&mut self) -> Option<Task>
     {
         self.done_id.map(|id| {
-            self.done.remove(id);
+            let task = self.done.remove(id);
 
             if self.done.len() > 0 {
                 if id > 0 {
@@ -209,7 +209,8 @@ impl Agile {
             } else {
                 self.done_id = None;
             }
-        });
+             task
+        })
     }
 
     pub fn curr_done_task(&mut self) -> Option<&mut Task>

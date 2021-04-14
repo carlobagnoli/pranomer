@@ -32,8 +32,6 @@
 
 ## IN PROGRESS
 
-- Create a separate "Done Pile"/"Done List"
-    > When a task is done, and has been so for a while, it shouldn't waste space in the done list, hence, we should separate the done tasks in a similar way to the Backlog.
 
 ## CLOGGED
 
@@ -76,3 +74,5 @@
 - Refactor Code
 - Create a Backlog list in a separate tab
 - Add a tab bar
+- Create a separate "Done Pile"/"Done List"
+    > When a task is done, and has been so for a while, it shouldn't waste space in the done list, hence, we should separate the done tasks in a similar way to the Backlog.

@@ -202,16 +202,24 @@ pub fn details(rustbox: &rustbox::RustBox, agile: &mut Agile)
 pub fn info_bar(rustbox: &rustbox::RustBox, agile: &mut Agile)
 {
     let input_mode = match agile.input_mode {
-        InputMode::NORMAL              =>  "NORMAL",
-        InputMode::INSERT              =>  "INSERT",
-        InputMode::LIST_INSERT         =>  "LIST INSERT",
-        InputMode::DETAIL              =>  "DETAIL",
-        InputMode::DESCRIPTION_INSERT  =>  "DESCRIPTION_INSERT",
-        InputMode::SUBTASK_INSERT      =>  "SUBTASK_INSERT",
-        InputMode::BACKLOG             =>  "BACKLOG",
-        InputMode::BACKLOG_INSERT      =>  "BACKLOG_INSERT",
-        InputMode::DONE_MODE           =>  "DONE_MODE",
-        InputMode::DONE_INSERT         =>  "DONE_INSERT",
+        InputMode::NORMAL                     =>  "NORMAL",
+        InputMode::INSERT                     =>  "INSERT",
+        InputMode::LIST_INSERT                =>  "LIST INSERT",
+        InputMode::DETAIL                     =>  "DETAIL",
+        InputMode::DESCRIPTION_INSERT         =>  "DESCRIPTION_INSERT",
+        InputMode::SUBTASK_INSERT             =>  "SUBTASK_INSERT",
+
+        InputMode::BACKLOG                    =>  "BACKLOG",
+        InputMode::BACKLOG_INSERT             =>  "BACKLOG_INSERT",
+        InputMode::BACKLOG_DETAIL             =>  "BACKLOG_DETAIL",
+        InputMode::BACKLOG_DESCRIPTION_INSERT =>  "BACKLOG_DESCRIPTION_INSERT",
+        InputMode::BACKLOG_SUBTASK_INSERT     =>  "BACKLOG_SUBTASK_INSERT",
+
+        InputMode::DONE_MODE                  =>  "DONE_MODE",
+        InputMode::DONE_INSERT                =>  "DONE_INSERT",
+        InputMode::DONE_DETAIL                =>  "DONE_DETAIL",
+        InputMode::DONE_DESCRIPTION_INSERT    =>  "DONE_DESCRIPTION_INSERT",
+        InputMode::DONE_SUBTASK_INSERT        =>  "DONE_SUBTASK_INSERT",
         _ => "MODE MISSING"
     };
 
@@ -268,6 +276,15 @@ pub fn tab_bar(rustbox: &rustbox::RustBox, agile: &mut Agile)
 
     rustbox.print(
         32,
+        0,
+        rustbox::RB_NORMAL,
+        rustbox::Color::Black,
+        if let Tab::DONE_PILE = agile.tab {rustbox::Color::Yellow} else {rustbox::Color::Blue},
+        "  3. DONE PILE  "
+    );
+
+    rustbox.print(
+        48,
         0,
         rustbox::RB_NORMAL,
         rustbox::Color::Default,
@@ -381,6 +398,146 @@ pub fn backlog_details(rustbox: &rustbox::RustBox, agile: &mut Agile)
         let mut sum = 0;
 
         for (i, subtask) in agile.curr_backlog_task().unwrap().subtasks.iter().enumerate() {
+            let y = area.y + title.len()/text_width + description.len()/text_width + sum + i + 9;
+
+            for j in 0..subtask.title.len()/text_width + 1 {
+                let text: String;
+                if j == 0 {
+                    text = format!(
+                        "[{}] {}",
+                        if subtask.done {"x"} else {" "},
+                        &subtask.title[j*text_width..((j+1)*text_width).min(subtask.title.len())]
+                    )
+                } else {
+                    text = format!(
+                        "    {}",
+                        &subtask.title[j*text_width..((j+1)*text_width).min(subtask.title.len())]
+                    )
+                };
+
+                if y + j < rustbox.height() - area.y - 2 {
+                    rustbox.print(
+                        area.x + 5,
+                        y + j,
+                        rustbox::RB_NORMAL,
+                        if subtask_id == i {rustbox::Color::Magenta}
+                        else {if subtask.done {rustbox::Color::Yellow} else {rustbox::Color::Blue}},
+                        rustbox::Color::Default,
+                        text.as_str()
+                    );
+                }
+            }
+
+            sum += subtask.title.len()/text_width + 1;
+        }
+    }
+}
+
+pub fn done_pile(rustbox: &rustbox::RustBox, agile: &mut Agile)
+{
+    let w = rustbox.width() as usize; // Window size
+    let n = ((w as f32 - 10f32)/64f32).round() as usize; // Number of columns
+    let s = (((w as f32 - 10f32) -  (n as f32 - 1f32) * 3f32)/n as f32) as usize; // Width size of columns
+    
+    for (i, chunk) in agile.done.chunks(n).enumerate() {
+        for j in 0..n.min(chunk.len()) {
+            let mut text: String;
+
+            if chunk[j].title.chars().count() > s {
+                text = format!("{}...", &chunk[j].title[0..s - 3]);
+            } else {
+                text = chunk[j].title[0..chunk[j].title.chars().count()].to_string();
+            }
+
+            rustbox.print(
+                5 + (s + 3)*j,
+                i*3 + 2,
+                rustbox::RB_NORMAL,
+                if i*n + j == agile.done_id.unwrap() {
+                    rustbox::Color::Magenta
+                } else {
+                    rustbox::Color::Default
+                },
+                rustbox::Color::Default,
+                text.as_str()
+            );
+
+            let mut deco_sum = 0;
+            for decorator in chunk[j].decorators.iter() {
+                rustbox.print(
+                    5 + (s + 3)*j + deco_sum,
+                    i*3 + 3,
+                    rustbox::RB_NORMAL,
+                    decorator.color,
+                    rustbox::Color::Default,
+                    decorator.value.as_str()
+                );
+
+                deco_sum += decorator.value.chars().count() + 1;
+            }
+        }
+    }
+}
+
+pub fn done_pile_details(rustbox: &rustbox::RustBox, agile: &mut Agile)
+{
+    if rustbox.width() < 10 || rustbox.height() < 5 { return; }
+
+    agile.curr_done_task().map(|task| {
+        task.update_decorators();
+    });
+
+    let area: Rect = Rect {
+        x: if rustbox.width()/2 > 32 {rustbox.width()/2 - 32} else {5},
+        y: (5).min(rustbox.height()/10).max(1),
+        width: if rustbox.width()/2 > 32 {64} else {rustbox.width() - 10},
+        height: rustbox.height() - (10).min(rustbox.height()/5).max(2)
+    };
+
+    popup(rustbox, &area);
+
+    let mut text_width = area.width - 12;
+
+    let title = agile.curr_done_task().unwrap().title.clone();
+
+    for i in 0..title.len()/text_width + 1 {
+        rustbox.print(
+            area.x + 5,
+            area.y + 2 + i,
+            rustbox::RB_NORMAL,
+            rustbox::Color::Green,
+            rustbox::Color::Default,
+            &title[i*text_width..((i+1)*text_width).min(title.len())]
+        );
+    }
+
+    let mut description = agile.curr_done_task().unwrap().description.clone();
+
+    if description.len() == 0 {
+        description = String::from("No description");
+    }
+
+    for i in 0..description.len()/text_width + 1 {
+        let y = area.y + (title.len()/text_width + 1) + i + 4;
+
+        if y < rustbox.height() - area.y - 2 {
+            rustbox.print(
+                area.x + 5,
+                y,
+                rustbox::RB_NORMAL,
+                rustbox::Color::Default,
+                rustbox::Color::Default,
+                &description[i*text_width..((i+1)*text_width).min(description.len())]
+            );
+        }
+    }
+
+    text_width -= 4;
+
+    if let Some(subtask_id) = agile.curr_done_task().unwrap().subtask_id {
+        let mut sum = 0;
+
+        for (i, subtask) in agile.curr_done_task().unwrap().subtasks.iter().enumerate() {
             let y = area.y + title.len()/text_width + description.len()/text_width + sum + i + 9;
 
             for j in 0..subtask.title.len()/text_width + 1 {
