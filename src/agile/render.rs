@@ -253,17 +253,17 @@ pub fn tab_bar(rustbox: &rustbox::RustBox, agile: &mut Agile)
         0,
         rustbox::RB_NORMAL,
         rustbox::Color::Black,
-        if let Tab::AGILE_BOARD = agile.tab {rustbox::Color::Yellow} else {rustbox::Color::Blue},
-        "  1. AGILE BOARD  "
+        if let Tab::BACKLOG = agile.tab {rustbox::Color::Yellow} else {rustbox::Color::Blue},
+        "  1. BACKLOG  "
     );
 
     rustbox.print(
-        18,
+        14,
         0,
         rustbox::RB_NORMAL,
         rustbox::Color::Black,
-        if let Tab::BACKLOG = agile.tab {rustbox::Color::Yellow} else {rustbox::Color::Blue},
-        "  2. BACKLOG  "
+        if let Tab::AGILE_BOARD = agile.tab {rustbox::Color::Yellow} else {rustbox::Color::Blue},
+        "  2. AGILE BOARD  "
     );
 
     rustbox.print(
@@ -278,55 +278,46 @@ pub fn tab_bar(rustbox: &rustbox::RustBox, agile: &mut Agile)
 
 pub fn backlog(rustbox: &rustbox::RustBox, agile: &mut Agile)
 {
-    let w: f32 = rustbox.width() as f32;
+    let w = rustbox.width() as usize; // Window size
+    let n = ((w as f32 - 10f32)/64f32).round() as usize; // Number of columns
+    let s = (((w as f32 - 10f32) -  (n as f32 - 1f32) * 3f32)/n as f32) as usize; // Width size of columns
+    
+    for (i, chunk) in agile.backlog.chunks(n).enumerate() {
+        for j in 0..n.min(chunk.len()) {
+            let mut text: String;
 
-    let sep = ((w - 10f32) - ((w as usize / 36) * 36) as f32)/((w as usize / 36 - 1) as f32);
+            if chunk[j].title.chars().count() > s {
+                text = format!("{}...", &chunk[j].title[0..s - 3]);
+            } else {
+                text = chunk[j].title[0..chunk[j].title.chars().count()].to_string();
+            }
 
-    for (i, task) in agile.backlog.iter().enumerate() {
-        let sep_rects = ((i%((w as usize)/36)) as f32 * (36f32 + sep)).round() as usize % (w as usize - 10);
-
-        let area: Rect = Rect {
-            x: 5 + sep_rects, y: 4 + (i/((w as usize)/36))*12, width: 32 + 2, height: 9 + 2
-        };
-
-        popup(rustbox, &area);
-
-        let text_height = (((task.title.chars().count() as f32)/30f32).ceil() as usize).min(4);
-
-        for j in 0..text_height {
             rustbox.print(
-                area.x + 2,
-                area.y + 1 + j,
+                5 + (s + 3)*j,
+                i*3 + 2,
                 rustbox::RB_NORMAL,
-                if agile.backlog_id.unwrap() == i {rustbox::Color::Magenta} else {rustbox::Color::Default},
+                if i*n + j == agile.backlog_id.unwrap() {
+                    rustbox::Color::Magenta
+                } else {
+                    rustbox::Color::Default
+                },
                 rustbox::Color::Default,
-                &task.title[(j*30)..((j+1)*30).min(task.title.chars().count())]
-            );
-        }
-
-        if !task.description.is_empty() {
-            rustbox.print(
-                area.x + 2,
-                area.y + 1 + text_height + 1,
-                rustbox::RB_NORMAL,
-                rustbox::Color::Default,
-                rustbox::Color::Default,
-                format!("> {}...", &task.description[0..(25).min(task.description.chars().count())]).as_str()
-            );
-        }
-
-        let mut deco_sum = 0;
-        for decorator in task.decorators.iter() {
-            rustbox.print(
-                area.x + 2 + deco_sum,
-                area.y + area.height - 2,
-                rustbox::RB_NORMAL,
-                decorator.color,
-                rustbox::Color::Default,
-                format!("{}", decorator.value).as_str()
+                text.as_str()
             );
 
-            deco_sum += decorator.value.chars().count() + 1;
+            let mut deco_sum = 0;
+            for decorator in chunk[j].decorators.iter() {
+                rustbox.print(
+                    5 + (s + 3)*j + deco_sum,
+                    i*3 + 3,
+                    rustbox::RB_NORMAL,
+                    decorator.color,
+                    rustbox::Color::Default,
+                    decorator.value.as_str()
+                );
+
+                deco_sum += decorator.value.chars().count() + 1;
+            }
         }
     }
 }
@@ -348,7 +339,7 @@ pub fn backlog_details(rustbox: &rustbox::RustBox, agile: &mut Agile)
 
     popup(rustbox, &area);
 
-    let mut text_width = area.width - 10;
+    let mut text_width = area.width - 12;
 
     let title = agile.curr_backlog_task().unwrap().title.clone();
 
@@ -374,7 +365,7 @@ pub fn backlog_details(rustbox: &rustbox::RustBox, agile: &mut Agile)
 
         if y < rustbox.height() - area.y - 2 {
             rustbox.print(
-                area.x + 4,
+                area.x + 5,
                 y,
                 rustbox::RB_NORMAL,
                 rustbox::Color::Default,

@@ -168,10 +168,10 @@ impl Agile {
         self.backlog_id = Some(self.backlog.len() - 1);
     }
 
-    pub fn remove_backlog_task(&mut self)
+    pub fn remove_backlog_task(&mut self) -> Option<Task>
     {
         self.backlog_id.map(|id| {
-            self.backlog.remove(id);
+            let task = self.backlog.remove(id);
 
             if self.backlog.len() > 0 {
                 if id > 0 {
@@ -180,7 +180,9 @@ impl Agile {
             } else {
                 self.backlog_id = None;
             }
-        });
+
+            task
+        })
     }
 
     pub fn curr_backlog_task(&mut self) -> Option<&mut Task>

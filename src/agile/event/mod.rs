@@ -99,7 +99,18 @@ fn normal_events(agile: &mut Agile, key: rustbox::keyboard::Key)
                 agile.input_mode = InputMode::DETAIL;
             }
         },
-        Key::Char('2') => {
+        Key::Char(' ') => {
+            agile.curr_list().and_then(|list| list.remove_curr_task())
+                .map(|task| agile.done.push(task));
+        },
+        Key::Char('\u{0}') => {
+            agile.curr_list().and_then(|list| list.remove_curr_task())
+                .map(|task| {
+                    agile.backlog.push(task);
+                    agile.backlog_id = Some(agile.backlog.len() - 1);
+                });
+        },
+        Key::Char('1') => {
             agile.tab = Tab::BACKLOG;
             agile.input_mode = InputMode::BACKLOG;
         },
@@ -254,7 +265,7 @@ fn backlog_events(agile: &mut Agile, key: rustbox::keyboard::Key, rustbox: &rust
         Key::Enter => {
             agile.input_mode = InputMode::BACKLOG_DETAIL;
         },
-        Key::Char('1') => {
+        Key::Char('2') => {
             agile.tab        =  Tab::AGILE_BOARD;
             agile.input_mode = InputMode::NORMAL;
         },
@@ -273,13 +284,13 @@ fn backlog_events(agile: &mut Agile, key: rustbox::keyboard::Key, rustbox: &rust
         },
         Key::Char('j') => {
             agile.backlog_id
-                .filter(|id| *id < agile.backlog.len() - ((rustbox.width() - 10) / 36))
-                .map(|id| agile.backlog_id = Some(id + ((rustbox.width() - 10) / 36)));
+                .filter(|id| *id < agile.backlog.len() - ((rustbox.width() - 10) / 64))
+                .map(|id| agile.backlog_id = Some(id + ((rustbox.width() - 10) as f32 / 64f32).round() as usize));
         },
         Key::Char('k') => {
             agile.backlog_id
-                .filter(|id| *id > ((rustbox.width() - 10) / 36))
-                .map(|id| agile.backlog_id = Some(id - ((rustbox.width() - 10) / 36)));
+                .filter(|id| *id > ((rustbox.width() - 10) / 64))
+                .map(|id| agile.backlog_id = Some(id - ((rustbox.width() - 10) as f32 / 64f32).round() as usize));
         },
         Key::Char('l') => {
             agile.backlog_id
@@ -288,6 +299,16 @@ fn backlog_events(agile: &mut Agile, key: rustbox::keyboard::Key, rustbox: &rust
         },
         Key::Char('D') => {
             agile.remove_backlog_task();
+        },
+        Key::Char(' ') => {
+            if !agile.lists.is_empty() {
+                agile.remove_backlog_task()
+                    .map(|task| agile.lists.first_mut()
+                         .map(|list| {
+                             list.tasks.push(task);
+                             list.task_id = Some(list.tasks.len() - 1);
+                         }));
+            }
         },
         _ => {}
     }
