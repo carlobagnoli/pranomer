@@ -98,6 +98,18 @@ fn normal_events(agile: &mut Agile, key: rustbox::keyboard::Key)
         Key::Char('X') => {
             agile.remove_curr_list();
         },
+        Key::Char('<') => {
+            agile.list_id.filter(|id| *id > 0).map(|id| {
+                agile.lists.swap(id, id - 1);
+                agile.list_id = Some(id - 1);
+            });
+        },
+        Key::Char('>') => {
+            agile.list_id.filter(|id| *id < agile.lists.len() - 1).map(|id| {
+                agile.lists.swap(id, id + 1);
+                agile.list_id = Some(id + 1);
+            });
+        },
         Key::Enter => {
             if agile.curr_task().is_some() {
                 agile.input_mode = InputMode::DETAIL;
@@ -674,32 +686,20 @@ pub fn main_loop(rustbox: &rustbox::RustBox, agile: &mut Agile) {
 
         match rustbox.poll_event(false) {
             Ok(rustbox::Event::KeyEvent(key)) => match agile.input_mode {
-                InputMode::NORMAL => match key {
-                    Key::Char('q') => break 'main,
-                    _ => normal_events(agile, key),
-                },
-                InputMode::DETAIL => match key {
-                    Key::Char('q') => break 'main,
-                    _ => detail_events(agile, key),
-                },
-                InputMode::BACKLOG => match key {
-                    Key::Char('q') => break 'main,
-                    _ => backlog_events(agile, key, rustbox),
-                },
-                InputMode::DONE_MODE => match key {
-                    Key::Char('q') => break 'main,
-                    _ => done_mode_events(agile, key, rustbox)
-                },
+                InputMode::NORMAL => match key {Key::Char('q') => break 'main, _ => normal_events(agile, key)},
+                InputMode::DETAIL => match key {Key::Char('q') => break 'main, _ => detail_events(agile, key)},
                 InputMode::INSERT                     =>                     insert_events(agile, key),
                 InputMode::LIST_INSERT                =>                list_insert_events(agile, key),
                 InputMode::DESCRIPTION_INSERT         =>         description_insert_events(agile, key),
                 InputMode::SUBTASK_INSERT             =>             subtask_insert_events(agile, key),
 
+                InputMode::BACKLOG => match key {Key::Char('q') => break 'main, _ => backlog_events(agile, key, rustbox)},
                 InputMode::BACKLOG_INSERT             =>             backlog_insert_events(agile, key),
                 InputMode::BACKLOG_SUBTASK_INSERT     =>     backlog_subtask_insert_events(agile, key),
                 InputMode::BACKLOG_DESCRIPTION_INSERT => backlog_description_insert_events(agile, key),
                 InputMode::BACKLOG_DETAIL             =>             backlog_detail_events(agile, key),
 
+                InputMode::DONE_MODE => match key {Key::Char('q') => break 'main, _ => done_mode_events(agile, key, rustbox)},
                 InputMode::DONE_INSERT                =>                done_insert_events(agile, key),
                 InputMode::DONE_DETAIL                =>                done_detail_events(agile, key),
                 InputMode::DONE_DESCRIPTION_INSERT    =>    done_description_insert_events(agile, key),

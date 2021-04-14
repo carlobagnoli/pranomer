@@ -22,13 +22,11 @@
 - Create a logo for the program
 - Add Priorities
 - Add task Weights
+- Add Color Tags with unicode characters
 - Add scroll for tasks
 - Add scroll for subtasks
-- Add Color Tags with unicode characters
-- Add a way to move a list
-- Refactor the persistent memory to a folder instead than a file
-- Add a file for persistent memory for the backlog list
-- Add a file for persistent memory for the done pile
+- Add scroll for backlog
+- Add scroll for done pile
 
 ## IN PROGRESS
 
@@ -76,3 +74,7 @@
 - Add a tab bar
 - Create a separate "Done Pile"/"Done List"
     > When a task is done, and has been so for a while, it shouldn't waste space in the done list, hence, we should separate the done tasks in a similar way to the Backlog.
+- Add a file for persistent memory for the done pile
+- Add a file for persistent memory for the backlog list
+- Refactor the persistent memory to a folder instead than a file
+- Add a way to move a list

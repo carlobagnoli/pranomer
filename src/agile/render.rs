@@ -223,19 +223,42 @@ pub fn info_bar(rustbox: &rustbox::RustBox, agile: &mut Agile)
         _ => "MODE MISSING"
     };
 
-    let task_scroll: String;
+    let mut task_scroll: String = String::new();
 
-    if agile.lists.len() > 0 {
-        if agile.curr_list().unwrap().tasks.len() > 0 {
-            let scroll_max  = agile.curr_list().unwrap().tasks.len();
-            let scroll_curr = agile.curr_list().unwrap().task_id.unwrap() + 1;
+    match agile.tab {
+        Tab::AGILE_BOARD => {
+            if !agile.lists.is_empty() {
+                if agile.curr_list().unwrap().tasks.len() > 0 {
+                    let scroll_max  = agile.curr_list().unwrap().tasks.len();
+                    let scroll_curr = agile.curr_list().unwrap().task_id.unwrap() + 1;
 
-            task_scroll = format!("{}% ☰ {}/{}", (scroll_curr * 100)/scroll_max, scroll_curr, scroll_max);
-        } else {
-            task_scroll = String::from("NO TASKS IN LIST  ");
-        }
-    } else {
-        task_scroll = String::from("NO LIST FOUND  ");
+                    task_scroll = format!("{}% ☰ {}/{}", (scroll_curr * 100)/scroll_max, scroll_curr, scroll_max);
+                } else {
+                    task_scroll = String::from("NO TASKS IN LIST  ");
+                }
+            }
+        },
+        Tab::BACKLOG => {
+            if !agile.backlog.is_empty() {
+                let scroll_max  = agile.backlog.len();
+                let scroll_curr = agile.backlog_id.unwrap() + 1;
+
+                task_scroll = format!("{}% ☰ {}/{}", (scroll_curr * 100)/scroll_max, scroll_curr, scroll_max);
+            } else {
+                task_scroll = String::from("NO TASKS IN BACKLOG");
+            }
+        },
+        Tab::DONE_PILE => {
+            if !agile.done.is_empty() {
+                let scroll_max  = agile.done.len();
+                let scroll_curr = agile.done_id.unwrap() + 1;
+
+                task_scroll = format!("{}% ☰ {}/{}", (scroll_curr * 100)/scroll_max, scroll_curr, scroll_max);
+            } else {
+                task_scroll = String::from("NO TASKS IN DONE PILE");
+            }
+        },
+        _ => task_scroll = String::from("NO TAB FOUND")
     }
 
     let white_space = " ".repeat(rustbox.width() - input_mode.len() - task_scroll.len() - 4);
@@ -254,8 +277,6 @@ pub fn info_bar(rustbox: &rustbox::RustBox, agile: &mut Agile)
 
 pub fn tab_bar(rustbox: &rustbox::RustBox, agile: &mut Agile)
 {
-    let tabs = [Tab::AGILE_BOARD, Tab::BACKLOG];
-
     rustbox.print(
         0,
         0,
@@ -299,9 +320,9 @@ pub fn backlog(rustbox: &rustbox::RustBox, agile: &mut Agile)
     let n = ((w as f32 - 10f32)/64f32).round() as usize; // Number of columns
     let s = (((w as f32 - 10f32) -  (n as f32 - 1f32) * 3f32)/n as f32) as usize; // Width size of columns
     
-    for (i, chunk) in agile.backlog.chunks(n).enumerate() {
+    for (i, chunk) in agile.backlog.chunks_mut(n).enumerate() {
         for j in 0..n.min(chunk.len()) {
-            let mut text: String;
+            let text: String;
 
             if chunk[j].title.chars().count() > s {
                 text = format!("{}...", &chunk[j].title[0..s - 3]);
@@ -321,6 +342,8 @@ pub fn backlog(rustbox: &rustbox::RustBox, agile: &mut Agile)
                 rustbox::Color::Default,
                 text.as_str()
             );
+
+            chunk[j].update_decorators();
 
             let mut deco_sum = 0;
             for decorator in chunk[j].decorators.iter() {
@@ -439,9 +462,9 @@ pub fn done_pile(rustbox: &rustbox::RustBox, agile: &mut Agile)
     let n = ((w as f32 - 10f32)/64f32).round() as usize; // Number of columns
     let s = (((w as f32 - 10f32) -  (n as f32 - 1f32) * 3f32)/n as f32) as usize; // Width size of columns
     
-    for (i, chunk) in agile.done.chunks(n).enumerate() {
+    for (i, chunk) in agile.done.chunks_mut(n).enumerate() {
         for j in 0..n.min(chunk.len()) {
-            let mut text: String;
+            let text: String;
 
             if chunk[j].title.chars().count() > s {
                 text = format!("{}...", &chunk[j].title[0..s - 3]);
@@ -461,6 +484,8 @@ pub fn done_pile(rustbox: &rustbox::RustBox, agile: &mut Agile)
                 rustbox::Color::Default,
                 text.as_str()
             );
+
+            chunk[j].update_decorators();
 
             let mut deco_sum = 0;
             for decorator in chunk[j].decorators.iter() {

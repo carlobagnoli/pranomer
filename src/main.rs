@@ -20,11 +20,11 @@ fn main() -> std::io::Result<()>{
         "kanban.md"
     };
 
-    let mut agile: Agile = fileio::read_kanban_from_file(path).unwrap_or(Agile::new());
+    let mut agile: Agile = fileio::read_app_from_folder().unwrap_or(Agile::new());
 
     event::main_loop(&rustbox, &mut agile);
 
-    fileio::output_contents_to_file(path, &mut agile)?;
+    fileio::output_contents_to_folder(&mut agile)?;
 
     Ok(())
 }
