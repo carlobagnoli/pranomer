@@ -7,13 +7,6 @@
 - aaaaaaa
 - aaaaaaaa
 - aaaaaaaa
-- aaaaaaa
-    > aaaaaaaaaaaaaaaaaaaaaaaaaaa
-    * [ ] aaaaaaaaaa
-    * [ ] aaaaaaaa
-    * [ ] aaaaaaaa
-    * [ ] aaaaaaaa
-    * [ ] aaaaaaaaa
 - aaaaaaaa
 - aaaaaaaa
 - aaaaaaaa
@@ -24,3 +17,11 @@
 - aaaaaaaaa
 - aaaaaaaaaa
 - aaaaaa
+- aaaaaaaaaaaaaaa
+- aaaaaaa
+    > Hay que hacer tal tal y tal
+    * [x] aaaaaaaaaa
+    * [x] aaaaaaaa
+    * [x] aaaaaaaa
+    * [x] aaaaaaaa
+    * [x] aaaaaaaaa

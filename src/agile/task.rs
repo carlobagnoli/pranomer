@@ -53,7 +53,7 @@ impl Task {
             /* Example: the ñ character crashes the app */
         self.title.insert(self.title_cursor_point, c);
 
-        self.title_cursor_point += 1;
+        self.title_cursor_point += c.len_utf8();
     }
 
     pub fn remove_from_title(&mut self)
@@ -155,11 +155,11 @@ impl Task {
     {
         self.decorators.clear();
 
-        if self.description.len() > 0 {
+        if !self.description.is_empty() {
             self.push_decorator(String::from("☰"), Color::Yellow);
         }
 
-        if self.subtasks.len() > 0 {
+        if !self.subtasks.is_empty() {
             let mut sum = 0;
 
             for subtask in self.subtasks.iter() {

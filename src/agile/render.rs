@@ -56,6 +56,14 @@ pub fn lists(rustbox: &rustbox::RustBox, agile: &mut Agile)
     }
 }
 
+// fn hyphenation(s: String, n: usize)
+// {
+//     let res: Vec<String> = vec![];
+//     for word in s.split_whitespace() {
+// 
+//     }
+// }
+
 pub fn tasks(rustbox: &rustbox::RustBox, agile: &mut Agile)
 {
         /* Update tasks */

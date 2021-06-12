@@ -2,8 +2,6 @@
 
 - Add a cursor, to see where the input is
     > Render a cursor at the cursor position.
-- Render the task titles with correct hyphenation.
-    > The task titles cut words out of nowhere, so, we need to a better hyphenation system.
 - Add INSERT functions
     * [ ] Add End button
     * [ ] Add Begin button
@@ -21,15 +19,22 @@
     * [ ] Add Ctrl-b
 - Create a logo for the program
 - Add Priorities
-- Add task Weights
 - Add Color Tags with unicode characters
 - Add scroll for tasks
-- Add scroll for subtasks
 - Add scroll for backlog
 - Add scroll for done pile
+- Add date and cronometer.
+- Add automatic task integration.
+    > Add a due time to add to the main tab.
+- Add a feature to add tasks in a due time.
+- Render the task titles with correct hyphenation.
+    > The task titles cut words out of nowhere, so, we need to a better hyphenation system.
+- Add task Weights
+- Add scroll for subtasks
 
 ## IN PROGRESS
 
+- Clean Code
 
 ## CLOGGED
 

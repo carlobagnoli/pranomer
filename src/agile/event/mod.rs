@@ -501,11 +501,11 @@ fn done_mode_events(agile: &mut Agile, key: rustbox::keyboard::Key, rustbox: &ru
         Key::Char('\u{0}') => {
             if !agile.lists.is_empty() {
                 agile.remove_done_task()
-                    .map(|task| agile.lists.last_mut()
-                         .map(|list| {
-                             list.tasks.push(task);
-                             list.task_id = Some(list.tasks.len() - 1);
-                         }));
+                     .map(|task| agile.lists.last_mut()
+                          .map(|list| {
+                              list.tasks.push(task);
+                              list.task_id = Some(list.tasks.len() - 1);
+                          }));
             }
         },
         _ => {}
